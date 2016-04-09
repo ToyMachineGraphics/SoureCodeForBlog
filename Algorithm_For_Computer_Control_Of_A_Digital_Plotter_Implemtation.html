@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>Algorithm For Computer Control Of A Digital Plotter: Implemtation</title>
+<style>
+.paragraph
+{
+  font-family : 微軟正黑體, 新細明體;
+  font-size : 22px;
+}
+
+.mono_space
+{
+  font-family : Consolas, 細明體;
+  font-size : 22px;
+}
+</style>
+</head>
+<body>
+<div class="paragraph">
+Lines are located in first octant.<br>
+<canvas id="canvas1" width="256" height="256" style="border:1px solid #c3c3c3;"></canvas>
+<script>
+var canvas1 = document.getElementById("canvas1");
+canvas1.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+var context1 = canvas1.getContext("2d");
+context1.fillStyle = 'rgb(255, 255, 255)';
+
+var w1 = canvas1.width;
+var h1 = canvas1.height;
+
+function drawLineInFirstOctant(p1, p2) {
+  context1.clearRect(0, 0, w1, h1);
+  context1.fillRect(p1.x, h1 - 1 - p1.y, 1, 1);
+
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  var d = 2 * dy - dx;
+  var y = p1.y;
+  for (var i = p1.x + 1; i <= p2.x; i++)
+  {
+    if (d >= 0) {
+      y++;
+      d += 2 * dy - 2 * dx;
+    } else {
+      d += 2 * dy;
+    }
+    context1.fillRect(i, h1 - 1 - y, 1, 1);
+  }
+}
+setInterval(function()
+{
+  var x1 = Math.round(Math.random() * w1 / 2);
+  var y1 = Math.round(Math.random() * h1 / 2);
+  var x2 = Math.round(w1 / 2 + Math.random() * w1 / 2);
+  var y2 = Math.round(Math.random() * (x2 - x1));
+  drawLineInFirstOctant({x:x1, y:y1}, {x:x2, y:y2});
+}, 1000);
+</script>
+</div>
+<div class="paragraph">
+Lines are located in all octants.<br>
+<canvas id="canvas2" width="256" height="256" style="border:1px solid #c3c3c3;"></canvas>
+<script>
+var canvas2 = document.getElementById("canvas2");
+canvas2.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+var context2 = canvas2.getContext("2d");
+context2.fillStyle = 'rgb(255, 255, 255)';
+
+var w2 = canvas2.width;
+var h2 = canvas2.height;
+var moves = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
+
+function drawLine(p1, p2) {
+  context2.clearRect(0, 0, w2, h2);
+
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+
+  var X = dx >= 0;
+  var Y = dy >= 0;
+  var Z = Math.abs(dx) - Math.abs(dy) >= 0;
+  var F = [X && Z, Y && !Z, !X && Z, !Y && !Z];
+  var G = [X && Y, !X && Y, !X && !Y, X && !Y];
+  var m1, m2;
+  for (var i = 0; i < F.length; i++) {
+    if (F[i] && m1 == null)
+    {
+      m1 = moves[i * 2];
+    }
+    if (G[i] && m2 == null)
+    {
+      m2 = moves[(i + 1) * 2 - 1];
+    }
+  }
+
+  var da = Z ? Math.abs(dx) : Math.abs(dy);
+  var db = Z ? Math.abs(dy) : Math.abs(dx);
+  var d = 2 * db - da;
+
+  context2.fillRect(p1.x, h2 - 1 - p1.y, 1, 1);
+  var p = {x:p1.x, y:p1.y};
+  while (p.x != p2.x && p.y != p2.y) {
+    if (d >= 0) {
+      p.x += m1[0];
+      p.y += m1[1];
+      d += 2 * db - 2 * da;
+    } else {
+      p.x += m2[0];
+      p.y += m2[1];
+      d += 2 * db;
+    }
+    context2.fillRect(p.x, h2 - 1 - p.y, 1, 1);
+  }
+}
+setInterval(function()
+{
+  var x1 = Math.round(Math.random() * w2);
+  var y1 = Math.round(Math.random() * h2);
+  var x2 = Math.round(Math.random() * w2);
+  var y2 = Math.round(Math.random() * h2);
+  drawLine({x:x1, y:y1}, {x:x2, y:y2});
+}, 1000);
+</script>
+</div>
+</body>
+</html>
