@@ -30,7 +30,6 @@ var w1 = canvas1.width;
 var h1 = canvas1.height;
 
 function drawLineInFirstOctant(p1, p2) {
-  context1.clearRect(0, 0, w1, h1);
   context1.fillRect(p1.x, h1 - 1 - p1.y, 1, 1);
 
   var dx = p2.x - p1.x;
@@ -50,6 +49,7 @@ function drawLineInFirstOctant(p1, p2) {
 }
 setInterval(function()
 {
+  context1.clearRect(0, 0, w1, h1);
   var x1 = Math.round(Math.random() * w1 / 2);
   var y1 = Math.round(Math.random() * h1 / 2);
   var x2 = Math.round(w1 / 2 + Math.random() * w1 / 2);
