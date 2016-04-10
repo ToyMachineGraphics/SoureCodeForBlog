@@ -72,8 +72,6 @@ var h2 = canvas2.height;
 var moves = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]];
 
 function drawLine(p1, p2) {
-  context2.clearRect(0, 0, w2, h2);
-
   var dx = p2.x - p1.x;
   var dy = p2.y - p1.y;
 
@@ -115,6 +113,7 @@ function drawLine(p1, p2) {
 }
 setInterval(function()
 {
+  context2.clearRect(0, 0, w2, h2);
   var x1 = Math.round(Math.random() * w2);
   var y1 = Math.round(Math.random() * h2);
   var x2 = Math.round(Math.random() * w2);
