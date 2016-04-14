@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>A Parallel Algorithm for Polygon Rasterization: Implemtation</title>
+</head>
+<body>
+<div class="paragraph">
+<h2>Integer vertices: Triangle traversal with bounding box.</h2>
+<canvas id="canvas1" width="256" height="256" style="border:1px solid #c3c3c3;"></canvas>
+<script>
+var canvas1 = document.getElementById("canvas1");
+canvas1.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+var context1 = canvas1.getContext("2d");
+context1.fillStyle = 'rgb(255, 255, 255)';
+
+var w1 = canvas1.width;
+var h1 = canvas1.height;
+
+function triangle(p)
+{
+  var minX = p[0].x,
+      maxX = p[0].x,
+	  minY = p[0].y,
+	  maxY = p[0].y;
+  for (var i = 0; i < p.length; i++) {
+    if (p[i].x < minX) {
+      minX = p[i].x;
+    }
+    if (p[i].x > maxX) {
+      maxX = p[i].x;
+    }
+    if (p[i].y < minY) {
+      minY = p[i].y;
+    }
+    if (p[i].y > maxY) {
+      maxY = p[i].y;
+    }
+  }
+  var edgeFunc12 = 0;
+  var edgeFunc23 = 0;
+  var edgeFunc31 = 0;
+  for (var row = minY; row <= maxY; row++) {
+    for (var col = minX; col <= maxX; col++) {
+      var edge12 = edgeFunc12 + (col - p[0].x) * (p[1].y - p[0].y) - (row - p[0].y) * (p[1].x - p[0].x);
+      var edge23 = edgeFunc23 + (col - p[1].x) * (p[2].y - p[1].y) - (row - p[1].y) * (p[2].x - p[1].x);
+      var edge31 = edgeFunc31 + (col - p[2].x) * (p[0].y - p[2].y) - (row - p[2].y) * (p[0].x - p[2].x);
+      if (edge12 >= 0 && edge23 >= 0 && edge31 >= 0) {
+        context1.fillRect(col, h1 - 1 - row, 1, 1);
+      }
+    }
+  }
+}
+setInterval(function()
+{
+  context1.clearRect(0, 0, w1, h1);
+  var x1 = Math.round(Math.random() * w1);
+  var y1 = Math.round(Math.random() * h1);
+  var x2 = Math.round(Math.random() * w1);
+  var y2 = Math.round(Math.random() * h1);
+  var x3 = Math.round(Math.random() * w1);
+  var y3 = Math.round(Math.random() * h1);
+  while ((x3 - x1) * (y2 - y1) - (y3 - y1) * (x2 - x1) <= 0) {
+    x3 = Math.round(Math.random() * w1);
+    y3 = Math.round(Math.random() * h1);
+  }
+  triangle([{x:x1, y:y1}, {x:x2, y:y2}, {x:x3, y:y3}]);
+}, 1000);
+</script>
+</div>
+<div class="paragraph">
+<h2>Integer vertices: Convex polygon traversal with bounding box.</h2>
+<canvas id="canvas2" width="256" height="256" style="border:1px solid #c3c3c3;"></canvas>
+<script>
+var canvas2 = document.getElementById("canvas2");
+canvas2.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+var context2 = canvas2.getContext("2d");
+context2.fillStyle = 'rgb(255, 255, 255)';
+
+var w2 = canvas2.width;
+var h2 = canvas2.height;
+var pi = 3.141592654;
+
+function randomConvexPolygon()
+{
+  var vertices = [];
+  var radius = 96;
+  var current = Math.random() / 2 * pi;
+  var totalRad = 0;
+  do {
+    var tmpX = Math.round(radius * Math.cos(current) + w2 / 2);
+    var tmpY = Math.round(radius * Math.sin(current) + h2 / 2);
+    vertices[vertices.length] = {x:tmpX, y:tmpY};
+	var offset = pi / 6 + Math.random() * pi / 2;
+	current -= offset;
+    totalRad += offset;
+  } while (totalRad < 11 / 6 * pi);
+  var tmp = vertices;
+  console.log(tmp.length);
+  
+  var minX = vertices[0].x,
+      maxX = vertices[0].x,
+	  minY = vertices[0].y,
+	  maxY = vertices[0].y;
+  for (var i = 0; i < vertices.length; i++) {
+    if (vertices[i].x < minX) {
+      minX = vertices[i].x;
+    }
+    if (vertices[i].x > maxX) {
+      maxX = vertices[i].x;
+    }
+    if (vertices[i].y < minY) {
+      minY = vertices[i].y;
+    }
+    if (vertices[i].y > maxY) {
+      maxY = vertices[i].y;
+    }
+  }
+  
+  var dXs = [];
+  var dYs = [];
+  var edgeFuncs = [];
+  for (var i = 0; i < vertices.length; i++) {
+    dXs[dXs.length] = vertices[(i + 1) % vertices.length].x - vertices[i].x;
+	dYs[dYs.length] = vertices[(i + 1) % vertices.length].y - vertices[i].y;
+	edgeFuncs[edgeFuncs.length] = 0;
+  }
+  edgeFuncs[edgeFuncs.length] = 0;
+  
+  for (var row = minY; row <= maxY; row++) {
+    for (var col = minX; col <= maxX; col++) {
+	  for (var i = 0; i < vertices.length; i++) {
+	    edgeFuncs[i] = (col - vertices[i].x) * dYs[i] - (row - vertices[i].y) * dXs[i];
+	  }
+	  
+	  var allOK = true;
+	  for (var i = 0; i < vertices.length; i++) {
+	    allOK = allOK && (edgeFuncs[i] >= 0);
+	  }
+	  if (allOK) {
+	    context2.fillRect(col, h2 - 1 - row, 1, 1);
+	  }
+	}
+  }
+}
+
+setInterval(function()
+{
+  context2.clearRect(0, 0, w2, h2);
+  randomConvexPolygon();
+}, 1000);
+</script>
+</div>
+</body>
+</html>
